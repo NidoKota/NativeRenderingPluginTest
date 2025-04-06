@@ -2,7 +2,7 @@
 #include "IUnityInterface.h"
 
 #ifndef UNITY_VULKAN_HEADER
-#define UNITY_VULKAN_HEADER <vulkan/vulkan.h>
+#define UNITY_VULKAN_HEADER <vulkan/vulkan.hpp>
 #endif
 
 #include UNITY_VULKAN_HEADER

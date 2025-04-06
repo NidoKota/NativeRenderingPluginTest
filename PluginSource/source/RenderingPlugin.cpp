@@ -309,7 +309,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 
 	if (eventID == 1)
 	{
-        drawToRenderTexture();
+        //drawToRenderTexture();
         DrawColoredTriangle();
         ModifyTexturePixels();
         ModifyVertexBuffer();

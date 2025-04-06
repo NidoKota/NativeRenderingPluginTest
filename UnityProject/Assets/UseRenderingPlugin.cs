@@ -79,16 +79,16 @@ public class UseRenderingPlugin : MonoBehaviour
     private static RenderTexture renderTex;
     private static GameObject pluginInfo;
 
-    private void CreateRenderTexture()
-    {
-        renderTex = new RenderTexture(256, 256, 16, RenderTextureFormat.ARGB32);
-        renderTex.Create();
-        IntPtr nativeBufPTr = renderTex.colorBuffer.GetNativeRenderBufferPtr();
-        SetRenderTexture(nativeBufPTr);
-        GameObject sphere = GameObject.Find("Sphere");
-        sphere.transform.rotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);
-        sphere.GetComponent<Renderer>().material.mainTexture = renderTex;
-    }
+    // private void CreateRenderTexture()
+    // {
+    //     renderTex = new RenderTexture(256, 256, 16, RenderTextureFormat.ARGB32);
+    //     renderTex.Create();
+    //     IntPtr nativeBufPTr = renderTex.colorBuffer.GetNativeRenderBufferPtr();
+    //     SetRenderTexture(nativeBufPTr);
+    //     GameObject sphere = GameObject.Find("Sphere");
+    //     sphere.transform.rotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);
+    //     sphere.GetComponent<Renderer>().material.mainTexture = renderTex;
+    // }
 
 #else
     private void CreateRenderTexture() { }
@@ -101,10 +101,10 @@ public class UseRenderingPlugin : MonoBehaviour
         RegisterPlugin();
 #endif
 
-        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
-        {
-            CreateRenderTexture();
-        }
+        // if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
+        // {
+        //     CreateRenderTexture();
+        // }
 
         CreateTextureAndPassToPlugin();
         SendMeshBuffersToPlugin();
@@ -113,11 +113,11 @@ public class UseRenderingPlugin : MonoBehaviour
 
     void OnDisable()
     {
-        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
-        {
-            // Signals the plugin that renderTex will be destroyed
-            SetRenderTexture(IntPtr.Zero);
-        }
+        // if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
+        // {
+        //     // Signals the plugin that renderTex will be destroyed
+        //     SetRenderTexture(IntPtr.Zero);
+        // }
     }
 
     private void CreateTextureAndPassToPlugin()

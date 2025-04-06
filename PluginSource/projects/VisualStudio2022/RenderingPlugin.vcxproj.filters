@@ -6,18 +6,6 @@
     <ClInclude Include="..\..\source\Unity\IUnityGraphics.h">
       <Filter>Unity</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\Unity\IUnityGraphicsD3D9.h">
-      <Filter>Unity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\Unity\IUnityGraphicsD3D11.h">
-      <Filter>Unity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\Unity\IUnityGraphicsD3D12.h">
-      <Filter>Unity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\Unity\IUnityGraphicsMetal.h">
-      <Filter>Unity</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\source\Unity\IUnityInterface.h">
       <Filter>Unity</Filter>
     </ClInclude>
@@ -27,13 +15,13 @@
     <ClInclude Include="..\..\source\gl3w\glcorearb.h">
       <Filter>gl3w</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\Unity\IUnityGraphicsVulkan.h">
+      <Filter>Unity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\RenderAPI.cpp" />
-    <ClCompile Include="..\..\source\RenderAPI_D3D11.cpp" />
-    <ClCompile Include="..\..\source\RenderAPI_OpenGLCoreES.cpp" />
     <ClCompile Include="..\..\source\RenderingPlugin.cpp" />
-    <ClCompile Include="..\..\source\RenderAPI_D3D12.cpp" />
     <ClCompile Include="..\..\source\RenderAPI_Vulkan.cpp" />
     <ClCompile Include="..\..\source\gl3w\gl3w.c">
       <Filter>gl3w</Filter>
@@ -50,8 +38,5 @@
   <ItemGroup>
     <None Include="..\..\source\RenderingPlugin.def" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\source\RenderAPI_Metal.mm" />
   </ItemGroup>
 </Project>
