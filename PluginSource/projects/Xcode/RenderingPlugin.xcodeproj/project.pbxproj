@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */; };
+		051B623F2E3DF7E3000055F1 /* MetalUpscaler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 051B623E2E3DF7E3000055F1 /* MetalUpscaler.mm */; };
 		2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */; };
 		2B6899BA1CF8396700C4BA4F /* RenderingPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B31CF8396700C4BA4F /* RenderingPlugin.cpp */; };
 		2B6899C91CF83DB000C4BA4F /* RenderingPlugin.bundle in Copy Bundle into Unity project */ = {isa = PBXBuildFile; fileRef = 8D576316048677EA00EA77CD /* RenderingPlugin.bundle */; };
@@ -30,11 +30,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		051B623D2E3DC1D9000055F1 /* Untitled.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Untitled.h; sourceTree = "<group>"; };
+		051B623E2E3DF7E3000055F1 /* MetalUpscaler.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MetalUpscaler.mm; sourceTree = "<group>"; };
+		051B62402E3DF7F4000055F1 /* MetalUpscaler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MetalUpscaler.h; sourceTree = "<group>"; };
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		2B6899AB1CF8396700C4BA4F /* PlatformBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlatformBase.h; path = ../../source/PlatformBase.h; sourceTree = "<group>"; };
-		2B6899AD1CF8396700C4BA4F /* RenderAPI_D3D11.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D11.cpp; path = ../../source/RenderAPI_D3D11.cpp; sourceTree = "<group>"; };
-		2B6899AE1CF8396700C4BA4F /* RenderAPI_D3D12.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D12.cpp; path = ../../source/RenderAPI_D3D12.cpp; sourceTree = "<group>"; };
-		2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_OpenGLCoreES.cpp; path = ../../source/RenderAPI_OpenGLCoreES.cpp; sourceTree = "<group>"; };
 		2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI.cpp; path = ../../source/RenderAPI.cpp; sourceTree = "<group>"; };
 		2B6899B21CF8396700C4BA4F /* RenderAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RenderAPI.h; path = ../../source/RenderAPI.h; sourceTree = "<group>"; };
 		2B6899B31CF8396700C4BA4F /* RenderingPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderingPlugin.cpp; path = ../../source/RenderingPlugin.cpp; sourceTree = "<group>"; };
@@ -91,12 +91,12 @@
 		08FB77AFFE84173DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				051B62402E3DF7F4000055F1 /* MetalUpscaler.h */,
+				051B623D2E3DC1D9000055F1 /* Untitled.h */,
+				051B623E2E3DF7E3000055F1 /* MetalUpscaler.mm */,
 				2B6899BC1CF8398200C4BA4F /* Unity */,
 				2B6899AB1CF8396700C4BA4F /* PlatformBase.h */,
-				2B6899AD1CF8396700C4BA4F /* RenderAPI_D3D11.cpp */,
-				2B6899AE1CF8396700C4BA4F /* RenderAPI_D3D12.cpp */,
 				2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */,
-				2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */,
 				2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */,
 				2B6899B21CF8396700C4BA4F /* RenderAPI.h */,
 				2B6899B31CF8396700C4BA4F /* RenderingPlugin.cpp */,
@@ -190,8 +190,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				2B6899BA1CF8396700C4BA4F /* RenderingPlugin.cpp in Sources */,
-				2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */,
 				2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */,
+				051B623F2E3DF7E3000055F1 /* MetalUpscaler.mm in Sources */,
 				2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
