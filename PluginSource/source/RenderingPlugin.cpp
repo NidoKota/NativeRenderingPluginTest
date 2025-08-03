@@ -7,7 +7,6 @@
 #include <math.h>
 #include <vector>
 
-
 // --------------------------------------------------------------------------
 // SetTextureFromUnity、スクリプトの1つから呼び出されるエクスポート関数の例。
 
@@ -54,7 +53,6 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginUnload()
 static RenderAPI* s_CurrentAPI = NULL;
 static UnityGfxRenderer s_DeviceType = kUnityGfxRendererNull;
 
-
 static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType)
 {
 	// 初期化時にグラフィックスAPI実装を作成
@@ -80,8 +78,6 @@ static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType ev
 	}
 }
 
-
-
 // --------------------------------------------------------------------------
 // OnRenderEvent
 // これはGL.IssuePluginEventスクリプト呼び出しで呼ばれます。eventIDは
@@ -97,40 +93,6 @@ static void ModifyTexturePixels()
 
 	int textureRowPitch;
 	void* textureDataPtr = s_CurrentAPI->BeginModifyTexture(textureHandle, width, height, &textureRowPitch);
-	if (!textureDataPtr)
-		return;
-
-//    const float t = g_Time * 4.0f;
-    const float t = 4.0f;
-
-	unsigned char* dst = (unsigned char*)textureDataPtr;
-	for (int y = 0; y < height; ++y)
-	{
-		unsigned char* ptr = dst;
-		for (int x = 0; x < width; ++x)
-		{
-			// シンプルな「プラズマ効果」：複数の組み合わされたサイン波
-			int vv = int(
-				(127.0f + (127.0f * sinf(x / 7.0f + t))) +
-				(127.0f + (127.0f * sinf(y / 5.0f - t))) +
-				(127.0f + (127.0f * sinf((x + y) / 6.0f - t))) +
-				(127.0f + (127.0f * sinf(sqrtf(float(x*x + y*y)) / 4.0f - t)))
-				) / 4;
-
-			// テクスチャピクセルを書き込み
-			ptr[0] = vv;
-			ptr[1] = vv;
-			ptr[2] = vv;
-			ptr[3] = vv;
-
-			// 次のピクセルへ（ピクセルは4 bpp）
-			ptr += 4;
-		}
-
-		// 次の画像行へ
-		dst += textureRowPitch;
-	}
-
 	s_CurrentAPI->EndModifyTexture(textureHandle, width, height, textureRowPitch, textureDataPtr);
 }
 
