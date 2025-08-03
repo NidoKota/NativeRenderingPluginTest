@@ -7,7 +7,7 @@
 
 #include "Unity/IUnityGraphicsMetal.h"
 #import <Metal/Metal.h>
-#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
+#import <MetalFX/MetalFX.h>
 
 class RenderAPI_Metal : public RenderAPI
 {
@@ -38,7 +38,7 @@ private:
 	
 	// アップスケーリング用リソース
 	id<MTLTexture>			m_UpscaledTexture;
-	MPSImageLanczosScale*	m_LanczosScaler;
+	id<MTLFXSpatialScaler>	m_SpatialScaler;
 	float					m_UpscaleScale;
 };
 
@@ -55,14 +55,15 @@ void RenderAPI_Metal::CreateResources()
 void RenderAPI_Metal::CreateUpscaleResources()
 {
     m_UpscaleScale = 2.0f;
-    m_LanczosScaler = [[MPSImageLanczosScale alloc] initWithDevice:m_Device];
+    // MetalFXスケーラーは動的に作成するため、ここでは初期化しない
+    m_SpatialScaler = nil;
 }
 
 RenderAPI_Metal::RenderAPI_Metal()
 	: m_Device(nil)
 	, m_CommandQueue(nil)
 	, m_UpscaledTexture(nil)
-	, m_LanczosScaler(nil)
+	, m_SpatialScaler(nil)
 	, m_UpscaleScale(1.0f)
 {
 }
@@ -87,7 +88,7 @@ void RenderAPI_Metal::ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInt
 		m_CommandQueue = nil;
 		m_Device = nil;
         m_UpscaledTexture = nil;
-        m_LanczosScaler = nil;
+        m_SpatialScaler = nil;
 	}
 }
 
@@ -111,8 +112,8 @@ void RenderAPI_Metal::EndModifyTexture(void* textureHandle, int textureWidth, in
 	// 元のテクスチャデータを更新
 	[tex replaceRegion:MTLRegionMake3D(0,0,0, textureWidth,textureHeight,1) mipmapLevel:0 withBytes:dataPtr bytesPerRow:rowPitch];
     
-	// アップスケーリング処理を実行
-	if (m_Device && m_CommandQueue && m_LanczosScaler)
+	// MetalFXを使用したアップスケーリング処理
+	if (m_Device && m_CommandQueue)
     {
 		// アップスケール後のサイズを計算
 		int upscaledWidth = (int)(textureWidth * m_UpscaleScale);
@@ -123,31 +124,48 @@ void RenderAPI_Metal::EndModifyTexture(void* textureHandle, int textureWidth, in
 			m_UpscaledTexture.width != upscaledWidth || 
 			m_UpscaledTexture.height != upscaledHeight)
         {
-			
 			MTLTextureDescriptor* textureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:tex.pixelFormat
 																								   width:upscaledWidth
 																								  height:upscaledHeight
 																							   mipmapped:NO];
-			textureDesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite;
+			textureDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+			textureDesc.storageMode = MTLStorageModePrivate;
 			m_UpscaledTexture = [m_Device newTextureWithDescriptor:textureDesc];
 		}
 		
-		if (m_UpscaledTexture)
+		// MetalFXスケーラーを作成（必要に応じて）
+		if (!m_SpatialScaler || 
+			m_SpatialScaler.inputWidth != textureWidth ||
+			m_SpatialScaler.inputHeight != textureHeight)
+        {
+			MTLFXSpatialScalerDescriptor* desc = [[MTLFXSpatialScalerDescriptor alloc] init];
+			desc.inputWidth = textureWidth;
+			desc.inputHeight = textureHeight;
+			desc.outputWidth = upscaledWidth;
+			desc.outputHeight = upscaledHeight;
+			desc.colorTextureFormat = tex.pixelFormat;
+			desc.outputTextureFormat = m_UpscaledTexture.pixelFormat;
+			desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModePerceptual;
+			
+			m_SpatialScaler = [desc newSpatialScalerWithDevice:m_Device];
+		}
+		
+		if (m_UpscaledTexture && m_SpatialScaler)
         {
 			// コマンドバッファを作成
 			id<MTLCommandBuffer> commandBuffer = [m_CommandQueue commandBuffer];
 			if (commandBuffer)
             {
-				// Lanczosスケーラーを使用してアップスケーリング実行
-				[m_LanczosScaler encodeToCommandBuffer:commandBuffer
-										 sourceTexture:tex
-								    destinationTexture:m_UpscaledTexture];
+				// MetalFXスケーラーを使用してアップスケーリング実行
+				m_SpatialScaler.colorTexture = tex;
+				m_SpatialScaler.outputTexture = m_UpscaledTexture;
+				[m_SpatialScaler encodeToCommandBuffer:commandBuffer];
 				
 				// コマンドを実行
 				[commandBuffer commit];
 				[commandBuffer waitUntilCompleted];
 				
-				NSLog(@"Metal upscaling completed: %dx%d -> %dx%d", 
+				NSLog(@"MetalFX upscaling completed: %dx%d -> %dx%d", 
 					  textureWidth, textureHeight,
 					  (int)m_UpscaledTexture.width, (int)m_UpscaledTexture.height);
 			}
