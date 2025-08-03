@@ -13,8 +13,11 @@
 static void* g_TextureHandle = NULL;
 static int   g_TextureWidth  = 0;
 static int   g_TextureHeight = 0;
+static void* g_UpscaledTextureHandle = NULL;
+static int   g_UpscaledTextureWidth  = 0;
+static int   g_UpscaledTextureHeight = 0;
 
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(void* textureHandle, int w, int h)
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(void* textureHandle, int w, int h, void* upscaled, int upscaledW, int upscaledH)
 {
 	// スクリプトが初期化時にこれを呼び出します。ここではテクスチャポインタを記憶するだけです。
 	// プラグインレンダリングイベントから毎フレームテクスチャピクセルを更新します（テクスチャ更新は
@@ -22,6 +25,10 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(v
 	g_TextureHandle = textureHandle;
 	g_TextureWidth = w;
 	g_TextureHeight = h;
+    
+    g_UpscaledTextureHandle = upscaled;
+    g_UpscaledTextureWidth = upscaledW;
+    g_UpscaledTextureHeight = upscaledH;
 }
 
 // --------------------------------------------------------------------------
@@ -90,10 +97,17 @@ static void ModifyTexturePixels()
 	int height = g_TextureHeight;
 	if (!textureHandle)
 		return;
+    
+    
+    void* upscaledTextureHandle = g_UpscaledTextureHandle;
+    int upscaledWidth = g_UpscaledTextureWidth;
+    int upscaledHeight = g_UpscaledTextureHeight;
+    if (!upscaledTextureHandle)
+        return;
 
 	int textureRowPitch;
 	void* textureDataPtr = s_CurrentAPI->BeginModifyTexture(textureHandle, width, height, &textureRowPitch);
-	s_CurrentAPI->EndModifyTexture(textureHandle, width, height, textureRowPitch, textureDataPtr);
+	s_CurrentAPI->EndModifyTexture(textureHandle, width, height, upscaledTextureHandle, upscaledWidth, upscaledHeight);
 }
 
 static void UNITY_INTERFACE_API OnRenderEvent(int eventID)

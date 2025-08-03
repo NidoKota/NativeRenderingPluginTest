@@ -23,14 +23,14 @@ public class UpscaleFeature : ScriptableRendererFeature
 #else
     [DllImport("RenderingPlugin")]
 #endif
-    private static extern void SetTextureFromUnity(System.IntPtr texture, int w, int h);
+    private static extern void SetTextureFromUnity(nint texture, int w, int h, nint upscaled, int upscaledW, int upscaledH);
 
 #if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
     [DllImport("__Internal")]
 #else
     [DllImport("RenderingPlugin")]
 #endif
-    private static extern System.IntPtr GetRenderEventFunc();
+    private static extern nint GetRenderEventFunc();
 
     public override void Create()
     {
@@ -53,7 +53,6 @@ public class UpscaleFeature : ScriptableRendererFeature
     {
         private UpscaleSettings settings;
         private RTHandle upscaledTexture;
-        private RTHandle tempTexture;
         private string profilerTag = "UpscalePass";
 
         public UpscalePass(UpscaleSettings settings)
@@ -78,9 +77,6 @@ public class UpscaleFeature : ScriptableRendererFeature
             
             // アップスケール用テンポラリテクスチャを確保
             RenderingUtils.ReAllocateIfNeeded(ref upscaledTexture, descriptor, name: "_UpscaledTexture");
-            
-            // 中間処理用テンポラリテクスチャ
-            RenderingUtils.ReAllocateIfNeeded(ref tempTexture, descriptor, name: "_TempUpscaleTexture");
         }
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
@@ -91,7 +87,7 @@ public class UpscaleFeature : ScriptableRendererFeature
             {
                 // 現在のカメラターゲット（低解像度）を取得
                 var renderer = renderingData.cameraData.renderer;
-                var sourceTexture = renderer.cameraColorTarget;
+                var sourceTexture = renderer.cameraColorTargetHandle;
 
                 // ネイティブプラグインにソーステクスチャを渡す
                 if (sourceTexture != null)
@@ -100,22 +96,10 @@ public class UpscaleFeature : ScriptableRendererFeature
                     if (sourceRT != null)
                     {
                         SetTextureFromUnity(sourceRT.GetNativeTexturePtr(), sourceRT.width, sourceRT.height);
-                        
+
                         // ネイティブプラグインのアップスケール処理を実行
                         cmd.IssuePluginEvent(GetRenderEventFunc(), 1);
                     }
-                }
-
-                // フォールバック：Unityのビルトイン機能でアップスケール
-                if (settings.upscaleMaterial != null)
-                {
-                    // カスタムマテリアルを使用してアップスケール
-                    Blit(cmd, sourceTexture, upscaledTexture, settings.upscaleMaterial);
-                }
-                else
-                {
-                    // デフォルトのバイリニア補間でアップスケール
-                    Blit(cmd, sourceTexture, upscaledTexture);
                 }
 
                 // 最終結果をカメラターゲットにコピー
