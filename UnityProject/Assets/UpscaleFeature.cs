@@ -19,19 +19,19 @@ public class UpscaleFeature : ScriptableRendererFeature
     private UpscalePass upscalePass;
 
     // ネイティブプラグインの関数をインポート
-// #if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
-//     [DllImport("__Internal")]
-// #else
-//     [DllImport("RenderingPlugin")]
-// #endif
-//     private static extern void SetTextureFromUnity(IntPtr texture, int w, int h, IntPtr upscaled, int upscaledW, int upscaledH);
-//
-// #if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
-//     [DllImport("__Internal")]
-// #else
-//     [DllImport("RenderingPlugin")]
-// #endif
-//     private static extern IntPtr GetRenderEventFunc();
+#if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
+    [DllImport("__Internal")]
+#else
+    [DllImport("RenderingPlugin")]
+#endif
+    private static extern void SetTextureFromUnity(nint texture, int w, int h, nint upscaled, int upscaledW, int upscaledH);
+
+#if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
+    [DllImport("__Internal")]
+#else
+    [DllImport("RenderingPlugin")]
+#endif
+    private static extern nint GetRenderEventFunc();
 
 
      [DllImport("RenderingPlugin")]
@@ -106,12 +106,12 @@ public class UpscaleFeature : ScriptableRendererFeature
                     {
                         Debug.Log($"{Test()}");
                         
-                        // SetTextureFromUnity(
-                        //     sourceRT.GetNativeTexturePtr(), sourceRT.width, sourceRT.height,
-                        //     upscaledRT.GetNativeTexturePtr(), upscaledRT.width, upscaledRT.height);
-                        //
-                        // // ネイティブプラグインのアップスケール処理を実行
-                        // cmd.IssuePluginEvent(GetRenderEventFunc(), 1);
+                        SetTextureFromUnity(
+                            sourceRT.GetNativeTexturePtr(), sourceRT.width, sourceRT.height,
+                            upscaledRT.GetNativeTexturePtr(), upscaledRT.width, upscaledRT.height);
+                        
+                        // ネイティブプラグインのアップスケール処理を実行
+                        cmd.IssuePluginEvent(GetRenderEventFunc(), 1);
                     }
                 }
             }
