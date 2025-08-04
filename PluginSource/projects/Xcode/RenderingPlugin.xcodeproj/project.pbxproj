@@ -220,6 +220,7 @@
 				HEADER_SEARCH_PATHS = ../;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:rfc1034Identifier}";
 				PRODUCT_NAME = RenderingPlugin;
 				VALID_ARCHS = "x86_64 arm64";
@@ -237,6 +238,7 @@
 				HEADER_SEARCH_PATHS = ../;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:rfc1034Identifier}";
 				PRODUCT_NAME = RenderingPlugin;
 				VALID_ARCHS = "x86_64 arm64";

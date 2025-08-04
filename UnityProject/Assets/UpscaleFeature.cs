@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -18,19 +19,23 @@ public class UpscaleFeature : ScriptableRendererFeature
     private UpscalePass upscalePass;
 
     // ネイティブプラグインの関数をインポート
-#if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
-    [DllImport("__Internal")]
-#else
-    [DllImport("RenderingPlugin")]
-#endif
-    private static extern void SetTextureFromUnity(nint texture, int w, int h, nint upscaled, int upscaledW, int upscaledH);
+// #if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
+//     [DllImport("__Internal")]
+// #else
+//     [DllImport("RenderingPlugin")]
+// #endif
+//     private static extern void SetTextureFromUnity(IntPtr texture, int w, int h, IntPtr upscaled, int upscaledW, int upscaledH);
+//
+// #if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
+//     [DllImport("__Internal")]
+// #else
+//     [DllImport("RenderingPlugin")]
+// #endif
+//     private static extern IntPtr GetRenderEventFunc();
 
-#if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
-    [DllImport("__Internal")]
-#else
-    [DllImport("RenderingPlugin")]
-#endif
-    private static extern nint GetRenderEventFunc();
+
+     [DllImport("RenderingPlugin")]
+     private static extern IntPtr _Test();
 
     public override void Create()
     {
@@ -77,6 +82,9 @@ public class UpscaleFeature : ScriptableRendererFeature
             
             // アップスケール用テンポラリテクスチャを確保
             RenderingUtils.ReAllocateIfNeeded(ref upscaledTexture, descriptor, name: "_UpscaledTexture");
+            
+            // 高解像度テクスチャを最終出力先として設定
+            ConfigureTarget(upscaledTexture);
         }
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
@@ -93,21 +101,17 @@ public class UpscaleFeature : ScriptableRendererFeature
                 if (sourceTexture != null)
                 {
                     var sourceRT = sourceTexture.rt;
-                    if (sourceRT != null)
+                    var upscaledRT = upscaledTexture.rt;
+                    if (sourceRT != null && upscaledRT != null)
                     {
-                        SetTextureFromUnity(sourceRT.GetNativeTexturePtr(), sourceRT.width, sourceRT.height);
-
-                        // ネイティブプラグインのアップスケール処理を実行
-                        cmd.IssuePluginEvent(GetRenderEventFunc(), 1);
+                        _Test();
+                        // SetTextureFromUnity(
+                        //     sourceRT.GetNativeTexturePtr(), sourceRT.width, sourceRT.height,
+                        //     upscaledRT.GetNativeTexturePtr(), upscaledRT.width, upscaledRT.height);
+                        //
+                        // // ネイティブプラグインのアップスケール処理を実行
+                        // cmd.IssuePluginEvent(GetRenderEventFunc(), 1);
                     }
-                }
-
-                // 最終結果をカメラターゲットにコピー
-                // カメラターゲットのサイズを元に戻す必要がある場合
-                var finalTarget = renderer.cameraColorTarget;
-                if (finalTarget != upscaledTexture)
-                {
-                    Blit(cmd, upscaledTexture, finalTarget);
                 }
             }
 
@@ -123,11 +127,6 @@ public class UpscaleFeature : ScriptableRendererFeature
             if (upscaledTexture != null)
             {
                 // RTHandleSystemが管理するため、手動でReleaseしない
-            }
-            
-            if (tempTexture != null)
-            {
-                // 同様にRTHandleSystemが管理
             }
         }
 

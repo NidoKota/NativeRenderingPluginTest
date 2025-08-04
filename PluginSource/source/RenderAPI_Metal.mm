@@ -35,9 +35,8 @@ private:
 	IUnityGraphicsMetal*	m_MetalGraphics;
 	id<MTLDevice>			m_Device;
 	id<MTLCommandQueue>		m_CommandQueue;
-	
-	// アップスケーリング用リソース
-	id<MTLFXSpatialScaler>	m_SpatialScaler;
+    
+    id<MTLFXSpatialScaler>  m_SpatialScaler;
 	float					m_UpscaleScale;
 };
 
@@ -113,24 +112,17 @@ void RenderAPI_Metal::EndModifyTexture(void* textureHandle, int textureWidth, in
 			m_SpatialScaler.inputWidth != textureWidth ||
 			m_SpatialScaler.inputHeight != textureHeight)
         {
-            if (@available(macOS 13.0, *))
-            {
-                MTLFXSpatialScalerDescriptor* desc = [[MTLFXSpatialScalerDescriptor alloc] init];
-                
-                desc.inputWidth = textureWidth;
-                desc.inputHeight = textureHeight;
-                desc.outputWidth = upscaledTex.width;
-                desc.outputHeight = upscaledTex.height;
-                desc.colorTextureFormat = tex.pixelFormat;
-                desc.outputTextureFormat = upscaledTex.pixelFormat;
-                desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModePerceptual;
-                
-                m_SpatialScaler = [desc newSpatialScalerWithDevice:m_Device];
-            }
-            else
-            {
-                m_SpatialScaler = nil;
-            }
+            MTLFXSpatialScalerDescriptor* desc = [[MTLFXSpatialScalerDescriptor alloc] init];
+            
+            desc.inputWidth = textureWidth;
+            desc.inputHeight = textureHeight;
+            desc.outputWidth = upscaledTex.width;
+            desc.outputHeight = upscaledTex.height;
+            desc.colorTextureFormat = tex.pixelFormat;
+            desc.outputTextureFormat = upscaledTex.pixelFormat;
+            desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModePerceptual;
+            
+            m_SpatialScaler = [desc newSpatialScalerWithDevice:m_Device];
 		}
 		
 		if (upscaledTex && m_SpatialScaler)
