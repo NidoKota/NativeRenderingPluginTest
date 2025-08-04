@@ -31,9 +31,9 @@ static int   g_UpscaledTextureHeight = 0;
 //    g_UpscaledTextureHeight = upscaledH;
 //}
 
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API Test()
+extern "C" int Test ()
 {
-    
+    return 123;
 }
 
 // --------------------------------------------------------------------------

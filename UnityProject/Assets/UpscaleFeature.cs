@@ -35,7 +35,7 @@ public class UpscaleFeature : ScriptableRendererFeature
 
 
      [DllImport("RenderingPlugin")]
-     private static extern IntPtr _Test();
+     private static extern int Test();
 
     public override void Create()
     {
@@ -104,7 +104,8 @@ public class UpscaleFeature : ScriptableRendererFeature
                     var upscaledRT = upscaledTexture.rt;
                     if (sourceRT != null && upscaledRT != null)
                     {
-                        _Test();
+                        Debug.Log($"{Test()}");
+                        
                         // SetTextureFromUnity(
                         //     sourceRT.GetNativeTexturePtr(), sourceRT.width, sourceRT.height,
                         //     upscaledRT.GetNativeTexturePtr(), upscaledRT.width, upscaledRT.height);
