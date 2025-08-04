@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		051B62452E401CA4000055F1 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B6899CD1CF8409B00C4BA4F /* Metal.framework */; };
 		2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */; };
-		2B6899BA1CF8396700C4BA4F /* RenderingPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B31CF8396700C4BA4F /* RenderingPlugin.cpp */; };
+		2B6899BA1CF8396700C4BA4F /* RenderingPlugin.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B31CF8396700C4BA4F /* RenderingPlugin.mm */; };
 		2B6899C91CF83DB000C4BA4F /* RenderingPlugin.bundle in Copy Bundle into Unity project */ = {isa = PBXBuildFile; fileRef = 8D576316048677EA00EA77CD /* RenderingPlugin.bundle */; };
 		2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */; };
 		2B6899D01CF8409D00C4BA4F /* MetalFX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B6899D11CF8409D00C4BA4F /* MetalFX.framework */; };
@@ -35,7 +35,7 @@
 		2B6899AB1CF8396700C4BA4F /* PlatformBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlatformBase.h; path = ../../source/PlatformBase.h; sourceTree = "<group>"; };
 		2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI.cpp; path = ../../source/RenderAPI.cpp; sourceTree = "<group>"; };
 		2B6899B21CF8396700C4BA4F /* RenderAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RenderAPI.h; path = ../../source/RenderAPI.h; sourceTree = "<group>"; };
-		2B6899B31CF8396700C4BA4F /* RenderingPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderingPlugin.cpp; path = ../../source/RenderingPlugin.cpp; sourceTree = "<group>"; };
+		2B6899B31CF8396700C4BA4F /* RenderingPlugin.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RenderingPlugin.mm; path = ../../source/RenderingPlugin.mm; sourceTree = "<group>"; };
 		2B6899C21CF839A600C4BA4F /* IUnityGraphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphics.h; path = ../../source/Unity/IUnityGraphics.h; sourceTree = "<group>"; };
 		2B6899C31CF839A600C4BA4F /* IUnityGraphicsD3D9.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphicsD3D9.h; path = ../../source/Unity/IUnityGraphicsD3D9.h; sourceTree = "<group>"; };
 		2B6899C41CF839A600C4BA4F /* IUnityGraphicsD3D11.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphicsD3D11.h; path = ../../source/Unity/IUnityGraphicsD3D11.h; sourceTree = "<group>"; };
@@ -110,7 +110,7 @@
 				2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */,
 				2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */,
 				2B6899B21CF8396700C4BA4F /* RenderAPI.h */,
-				2B6899B31CF8396700C4BA4F /* RenderingPlugin.cpp */,
+				2B6899B31CF8396700C4BA4F /* RenderingPlugin.mm */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -200,7 +200,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2B6899BA1CF8396700C4BA4F /* RenderingPlugin.cpp in Sources */,
+				2B6899BA1CF8396700C4BA4F /* RenderingPlugin.mm in Sources */,
 				2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */,
 				2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */,
 			);

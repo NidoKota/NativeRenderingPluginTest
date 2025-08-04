@@ -7,17 +7,39 @@
 #include <math.h>
 #include <vector>
 
+#include "Unity/IUnityGraphicsMetal.h"
+#import <Metal/Metal.h>
+#import <MetalFX/MetalFX.h>
+
 // --------------------------------------------------------------------------
 // SetTextureFromUnity、スクリプトの1つから呼び出されるエクスポート関数の例。
+
+extern "C" int Test ()
+{
+    return 123;
+}
 
 static void* g_TextureHandle = NULL;
 static int   g_TextureWidth  = 0;
 static int   g_TextureHeight = 0;
+
 static void* g_UpscaledTextureHandle = NULL;
 static int   g_UpscaledTextureWidth  = 0;
 static int   g_UpscaledTextureHeight = 0;
 
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(void* textureHandle, int w, int h, void* upscaled, int upscaledW, int upscaledH)
+static IUnityGraphicsMetal*   m_MetalGraphics;
+static id<MTLDevice>          m_Device;
+static id<MTLCommandQueue>    m_CommandQueue;
+static id<MTLFXSpatialScaler> m_SpatialScaler;
+static float                  m_UpscaleScale;
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(
+    void* textureHandle,
+    int w,
+    int h,
+    void* upscaled,
+    int upscaledW,
+    int upscaledH)
 {
     // スクリプトが初期化時にこれを呼び出します。ここではテクスチャポインタを記憶するだけです。
     // プラグインレンダリングイベントから毎フレームテクスチャピクセルを更新します（テクスチャ更新は
@@ -29,11 +51,6 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(v
     g_UpscaledTextureHandle = upscaled;
     g_UpscaledTextureWidth = upscaledW;
     g_UpscaledTextureHeight = upscaledH;
-}
-
-extern "C" int Test ()
-{
-    return 123;
 }
 
 // --------------------------------------------------------------------------
@@ -95,35 +112,87 @@ static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType ev
 // これはGL.IssuePluginEventスクリプト呼び出しで呼ばれます。eventIDは
 // IssuePluginEventに渡される整数です。この例では、その値を無視します。
 
-static void ModifyTexturePixels()
+void Upscale()
 {
-	void* textureHandle = g_TextureHandle;
-	int width = g_TextureWidth;
-	int height = g_TextureHeight;
-	if (!textureHandle)
-		return;
+    // Unity側から受け取ったGPUテクスチャポインタを直接使用
+    id<MTLTexture> tex = (__bridge id<MTLTexture>)g_TextureHandle;
+    id<MTLTexture> upscaledTex = (__bridge id<MTLTexture>)g_UpscaledTextureHandle;
     
+    // MetalFXを使用したGPU間直接アップスケーリング処理
+    if (m_Device && m_CommandQueue && tex)
+    {
+        // MetalFXスケーラーを作成（必要に応じて）
+        if (!m_SpatialScaler ||
+            m_SpatialScaler.inputWidth != g_TextureWidth ||
+            m_SpatialScaler.inputHeight != g_TextureHeight)
+        {
+            MTLFXSpatialScalerDescriptor* desc = [[MTLFXSpatialScalerDescriptor alloc] init];
+            
+            desc.inputWidth = g_TextureWidth;
+            desc.inputHeight = g_TextureHeight;
+            desc.outputWidth = upscaledTex.width;
+            desc.outputHeight = upscaledTex.height;
+            desc.colorTextureFormat = tex.pixelFormat;
+            desc.outputTextureFormat = upscaledTex.pixelFormat;
+            desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModePerceptual;
+            
+            m_SpatialScaler = [desc newSpatialScalerWithDevice:m_Device];
+        }
+        
+        if (upscaledTex && m_SpatialScaler)
+        {
+            // コマンドバッファを作成
+            id<MTLCommandBuffer> commandBuffer = [m_CommandQueue commandBuffer];
+            if (commandBuffer)
+            {
+                // MetalFXスケーラーを使用してGPU間直接アップスケーリング実行
+                m_SpatialScaler.colorTexture = tex;
+                m_SpatialScaler.outputTexture = upscaledTex;
+                [m_SpatialScaler encodeToCommandBuffer:commandBuffer];
+                
+                // コマンドを実行
+                [commandBuffer commit];
+                [commandBuffer waitUntilCompleted];
+            }
+        }
+    }
     
-    void* upscaledTextureHandle = g_UpscaledTextureHandle;
-    int upscaledWidth = g_UpscaledTextureWidth;
-    int upscaledHeight = g_UpscaledTextureHeight;
-    if (!upscaledTextureHandle)
-        return;
+    // CPUメモリバッファは使用していないため、解放処理も不要
+}
 
-	int textureRowPitch;
-	void* textureDataPtr = s_CurrentAPI->BeginModifyTexture(textureHandle, width, height, &textureRowPitch);
-	s_CurrentAPI->EndModifyTexture(textureHandle, width, height, upscaledTextureHandle, upscaledWidth, upscaledHeight);
+void RenderAPI_Metal::ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* interfaces)
+{
+    if (type == kUnityGfxDeviceEventInitialize)
+    {
+        m_MetalGraphics = interfaces->Get<IUnityGraphicsMetal>();
+        
+        // Metalデバイスとコマンドキューを取得
+        m_Device = m_MetalGraphics->MetalDevice();
+        m_CommandQueue = [m_Device newCommandQueue];
+        
+        CreateResources();
+        CreateUpscaleResources();
+    }
+    else if (type == kUnityGfxDeviceEventShutdown)
+    {
+        // リソースを解放
+        m_CommandQueue = nil;
+        m_Device = nil;
+        m_SpatialScaler = nil;
+    }
 }
 
 static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 {
 	// 不明/サポートされていないグラフィックスデバイスタイプ？何もしない
-	if (s_CurrentAPI == NULL)
-		return;
+    if (s_CurrentAPI == NULL)
+    {
+        return;
+    }
 
 	if (eventID == 1)
 	{
-        ModifyTexturePixels();
+        Upscale();
 	}
 }
 

@@ -32,10 +32,9 @@ public class UpscaleFeature : ScriptableRendererFeature
     [DllImport("RenderingPlugin")]
 #endif
     private static extern nint GetRenderEventFunc();
-
-
-     [DllImport("RenderingPlugin")]
-     private static extern int Test();
+    
+    [DllImport("RenderingPlugin")] 
+    private static extern int Test();
 
     public override void Create()
     {
@@ -44,25 +43,28 @@ public class UpscaleFeature : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        if (upscalePass != null)
+        if (upscalePass == null)
         {
-            // カメラの解像度を下げる
-            renderingData.cameraData.renderScale = settings.renderScale;
-            
-            renderer.EnqueuePass(upscalePass);
+            return;
         }
+        
+        // カメラの解像度を下げる
+        renderingData.cameraData.renderScale = settings.renderScale;
+            
+        renderer.EnqueuePass(upscalePass);
     }
 
     // カスタムレンダーパスクラス
     private class UpscalePass : ScriptableRenderPass
     {
-        private UpscaleSettings settings;
-        private RTHandle upscaledTexture;
-        private string profilerTag = "UpscalePass";
+        private const string ProfilerTag = "UpscalePass";
+        
+        private readonly UpscaleSettings m_Settings;
+        private RTHandle m_UpscaledTexture;
 
         public UpscalePass(UpscaleSettings settings)
         {
-            this.settings = settings;
+            m_Settings = settings;
             renderPassEvent = settings.renderPassEvent;
         }
 
@@ -76,36 +78,35 @@ public class UpscaleFeature : ScriptableRendererFeature
             var originalHeight = descriptor.height;
             
             // アップスケール後のサイズを計算
-            descriptor.width = Mathf.RoundToInt(originalWidth * settings.upscaleScale);
-            descriptor.height = Mathf.RoundToInt(originalHeight * settings.upscaleScale);
+            descriptor.width = Mathf.RoundToInt(originalWidth * m_Settings.upscaleScale);
+            descriptor.height = Mathf.RoundToInt(originalHeight * m_Settings.upscaleScale);
             descriptor.depthBufferBits = 0; // カラーテクスチャのみ
             
             // アップスケール用テンポラリテクスチャを確保
-            RenderingUtils.ReAllocateIfNeeded(ref upscaledTexture, descriptor, name: "_UpscaledTexture");
+            RenderingUtils.ReAllocateIfNeeded(ref m_UpscaledTexture, descriptor, name: "_UpscaledTexture");
             
             // 高解像度テクスチャを最終出力先として設定
-            ConfigureTarget(upscaledTexture);
+            ConfigureTarget(m_UpscaledTexture);
         }
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            CommandBuffer cmd = CommandBufferPool.Get(profilerTag);
+            CommandBuffer cmd = CommandBufferPool.Get(ProfilerTag);
 
-            using (new ProfilingScope(cmd, new ProfilingSampler(profilerTag)))
+            using (new ProfilingScope(cmd, new ProfilingSampler(ProfilerTag)))
             {
                 // 現在のカメラターゲット（低解像度）を取得
-                var renderer = renderingData.cameraData.renderer;
-                var sourceTexture = renderer.cameraColorTargetHandle;
+                ScriptableRenderer renderer = renderingData.cameraData.renderer;
+                RTHandle sourceTexture = renderer.cameraColorTargetHandle;
 
                 // ネイティブプラグインにソーステクスチャを渡す
                 if (sourceTexture != null)
                 {
-                    var sourceRT = sourceTexture.rt;
-                    var upscaledRT = upscaledTexture.rt;
+                    RenderTexture sourceRT = sourceTexture.rt;
+                    RenderTexture upscaledRT = m_UpscaledTexture.rt;
+                    
                     if (sourceRT != null && upscaledRT != null)
                     {
-                        Debug.Log($"{Test()}");
-                        
                         SetTextureFromUnity(
                             sourceRT.GetNativeTexturePtr(), sourceRT.width, sourceRT.height,
                             upscaledRT.GetNativeTexturePtr(), upscaledRT.width, upscaledRT.height);
@@ -122,18 +123,7 @@ public class UpscaleFeature : ScriptableRendererFeature
 
         public override void OnCameraCleanup(CommandBuffer cmd)
         {
-            // テンポラリテクスチャのクリーンアップ
-            // RTHandleは自動的に管理されるため、明示的な解放は不要
-            // ただし、nullチェックは行う
-            if (upscaledTexture != null)
-            {
-                // RTHandleSystemが管理するため、手動でReleaseしない
-            }
-        }
-
-        public override void FrameCleanup(CommandBuffer cmd)
-        {
-            base.FrameCleanup(cmd);
+            
         }
     }
 }
