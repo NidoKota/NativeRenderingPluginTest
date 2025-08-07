@@ -29,8 +29,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		056388D72E4423D80049BF2A /* DebugUtility.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; name = DebugUtility.hpp; path = ../../source/DebugUtility.hpp; sourceTree = "<group>"; };
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
-		2B6899AB1CF8396700C4BA4F /* PlatformBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlatformBase.h; path = ../../source/PlatformBase.h; sourceTree = "<group>"; };
+		2B6899AB1CF8396700C4BA4F /* PlatformBase.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlatformBase.h; path = ../../source/PlatformBase.h; sourceTree = "<group>"; };
 		2B6899B31CF8396700C4BA4F /* RenderingPlugin.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RenderingPlugin.mm; path = ../../source/RenderingPlugin.mm; sourceTree = "<group>"; };
 		2B6899C21CF839A600C4BA4F /* IUnityGraphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphics.h; path = ../../source/Unity/IUnityGraphics.h; sourceTree = "<group>"; };
 		2B6899C31CF839A600C4BA4F /* IUnityGraphicsD3D9.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphicsD3D9.h; path = ../../source/Unity/IUnityGraphicsD3D9.h; sourceTree = "<group>"; };
@@ -103,6 +104,7 @@
 				2B6899BC1CF8398200C4BA4F /* Unity */,
 				2B6899AB1CF8396700C4BA4F /* PlatformBase.h */,
 				2B6899B31CF8396700C4BA4F /* RenderingPlugin.mm */,
+				056388D72E4423D80049BF2A /* DebugUtility.hpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";

@@ -6,18 +6,15 @@
 #include <assert.h>
 #include <math.h>
 #include <vector>
+#include <string>
 
 #include "Unity/IUnityGraphicsMetal.h"
+#include "DebugUtility.hpp"
 #import <Metal/Metal.h>
 #import <MetalFX/MetalFX.h>
 
 // --------------------------------------------------------------------------
 // SetTextureFromUnity、スクリプトの1つから呼び出されるエクスポート関数の例。
-
-extern "C" int Test ()
-{
-    return 123;
-}
 
 void* g_TextureHandle = NULL;
 int   g_TextureWidth  = 0;
@@ -27,11 +24,22 @@ void* g_UpscaledTextureHandle = NULL;
 int   g_UpscaledTextureWidth  = 0;
 int   g_UpscaledTextureHeight = 0;
 
-IUnityGraphicsMetal*   m_MetalGraphics;
-id<MTLDevice>          m_Device;
-id<MTLCommandQueue>    m_CommandQueue;
-id<MTLFXSpatialScaler> m_SpatialScaler;
-float                  m_UpscaleScale;
+IUnityGraphicsMetal*   g_MetalGraphics;
+id<MTLDevice>          g_Device;
+id<MTLCommandQueue>    g_CommandQueue;
+id<MTLFXSpatialScaler> g_SpatialScaler;
+float                  g_UpscaleScale;
+
+extern "C" int Test ()
+{
+    return 123;
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetLogCallback(void (*logCallback)(const char*), void (*logErrorCallback)(const char*))
+{
+    g_logCallback = logCallback;
+    g_logErrorCallback = logErrorCallback;
+}
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(
     void* textureHandle,
@@ -108,48 +116,50 @@ void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType
 
 void CreateResources()
 {
-    m_UpscaleScale = 2.0f;
+    g_UpscaleScale = 2.0f;
     // MetalFXスケーラーは動的に作成するため、ここでは初期化しない
-    m_SpatialScaler = nil;
+    g_SpatialScaler = nil;
 }
 
 void ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* interfaces)
 {
     if (type == kUnityGfxDeviceEventInitialize)
     {
-        m_MetalGraphics = interfaces->Get<IUnityGraphicsMetal>();
+        g_MetalGraphics = interfaces->Get<IUnityGraphicsMetal>();
         
         // Metalデバイスとコマンドキューを取得
-        m_Device = m_MetalGraphics->MetalDevice();
-        m_CommandQueue = [m_Device newCommandQueue];
+        g_Device = g_MetalGraphics->MetalDevice();
+        g_CommandQueue = [g_Device newCommandQueue];
         
         CreateResources();
     }
     else if (type == kUnityGfxDeviceEventShutdown)
     {
         // リソースを解放
-        m_CommandQueue = nil;
-        m_Device = nil;
-        m_SpatialScaler = nil;
+        g_CommandQueue = nil;
+        g_Device = nil;
+        g_SpatialScaler = nil;
     }
 }
 
 void Upscale()
 {
+    LOG("log by objective-cpp");
+    
     // Unity側から受け取ったGPUテクスチャポインタを直接使用
     id<MTLTexture> tex = (__bridge id<MTLTexture>)g_TextureHandle;
     id<MTLTexture> upscaledTex = (__bridge id<MTLTexture>)g_UpscaledTextureHandle;
     
     // MetalFXを使用したGPU間直接アップスケーリング処理
-    if (!m_Device || !m_CommandQueue || !tex)
+    if (!g_Device || !g_CommandQueue || !tex)
     {
         return;
     }
     
     // MetalFXスケーラーを作成（必要に応じて）
-    if (!m_SpatialScaler ||
-        m_SpatialScaler.inputWidth != g_TextureWidth ||
-        m_SpatialScaler.inputHeight != g_TextureHeight)
+    if (!g_SpatialScaler ||
+        g_SpatialScaler.inputWidth != g_TextureWidth ||
+        g_SpatialScaler.inputHeight != g_TextureHeight)
     {
         MTLFXSpatialScalerDescriptor* desc = [[MTLFXSpatialScalerDescriptor alloc] init];
         
@@ -161,19 +171,19 @@ void Upscale()
         desc.outputTextureFormat = upscaledTex.pixelFormat;
         desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModePerceptual;
         
-        m_SpatialScaler = [desc newSpatialScalerWithDevice:m_Device];
+        g_SpatialScaler = [desc newSpatialScalerWithDevice:g_Device];
     }
     
-    if (upscaledTex && m_SpatialScaler)
+    if (upscaledTex && g_SpatialScaler)
     {
         // コマンドバッファを作成
-        id<MTLCommandBuffer> commandBuffer = [m_CommandQueue commandBuffer];
+        id<MTLCommandBuffer> commandBuffer = [g_CommandQueue commandBuffer];
         if (commandBuffer)
         {
             // MetalFXスケーラーを使用してGPU間直接アップスケーリング実行
-            m_SpatialScaler.colorTexture = tex;
-            m_SpatialScaler.outputTexture = upscaledTex;
-            [m_SpatialScaler encodeToCommandBuffer:commandBuffer];
+            g_SpatialScaler.colorTexture = tex;
+            g_SpatialScaler.outputTexture = upscaledTex;
+            [g_SpatialScaler encodeToCommandBuffer:commandBuffer];
             
             // コマンドを実行
             [commandBuffer commit];

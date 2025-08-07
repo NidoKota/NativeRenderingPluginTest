@@ -1,12 +1,17 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using System.Runtime.InteropServices;
 
 public class UpscaleFeature : ScriptableRendererFeature
 {
-    [System.Serializable]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void LogCallbackInternal([MarshalAs(UnmanagedType.LPStr)] string message);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void LogErrorCallbackInternal([MarshalAs(UnmanagedType.LPStr)] string message);
+    
+    [Serializable]
     public class UpscaleSettings
     {
         public RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
@@ -17,7 +22,22 @@ public class UpscaleFeature : ScriptableRendererFeature
 
     public UpscaleSettings settings = new UpscaleSettings();
     private UpscalePass upscalePass;
+    private GCHandle _logCallbackInternalHandle;
+    private GCHandle _logErrorCallbackInternalHandle;
 
+    private void CallLogCallbackInternal(string str)
+    {
+        Debug.Log(str);
+    }
+        
+    private void CallLogErrorCallbackInternal(string str)
+    {
+        Debug.LogError(str);
+    }
+    
+    [DllImport("RenderingPlugin")]
+    private static extern void SetLogCallback(LogCallbackInternal logCallback, LogErrorCallbackInternal logErrorCallback);
+    
     // ネイティブプラグインの関数をインポート
 #if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
     [DllImport("__Internal")]
@@ -39,8 +59,19 @@ public class UpscaleFeature : ScriptableRendererFeature
     public override void Create()
     {
         upscalePass = new UpscalePass(settings);
-    }
 
+        _logCallbackInternalHandle = GCHandle.Alloc((LogCallbackInternal)CallLogCallbackInternal);
+        _logErrorCallbackInternalHandle = GCHandle.Alloc((LogErrorCallbackInternal)CallLogErrorCallbackInternal);
+            
+        SetLogCallback((LogCallbackInternal)_logCallbackInternalHandle.Target, (LogErrorCallbackInternal)_logErrorCallbackInternalHandle.Target);
+    }
+    
+    protected override void Dispose(bool disposing)
+    {
+        _logCallbackInternalHandle.Free();
+        _logErrorCallbackInternalHandle.Free();
+    }
+    
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
         if (upscalePass == null)
